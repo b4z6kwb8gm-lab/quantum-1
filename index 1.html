@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>量子力学 穴埋めクイズ</title>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    tags: 'ams'
+  },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent2: #bc8cff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --tab-active: #1f6feb;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1b2a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(88,166,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+  header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--text) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+  }
+  header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* Progress bar */
+  .progress-bar-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* Tabs */
+  .tabs-nav {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 0.9rem 1.2rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Tab panels */
+  .tab-panel { display: none; padding: 2rem; max-width: 900px; margin: 0 auto; }
+  .tab-panel.active { display: block; }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    width: 2rem; height: 2rem;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 1.1rem; font-weight: 600; }
+
+  /* Formula display */
+  .formula-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+  }
+  .formula-box .label {
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  /* Question card */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    transition: border-color 0.2s;
+  }
+  .q-card:hover { border-color: #444c56; }
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .q-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent2);
+    white-space: nowrap;
+    margin-top: 0.1rem;
+  }
+  .q-text { font-size: 0.95rem; line-height: 1.6; }
+
+  /* Options */
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 0.9rem; }
+  @media (max-width: 560px) { .options { grid-template-columns: 1fr; } }
+  .opt-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 0.65rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.88rem;
+    transition: background 0.15s, border-color 0.15s;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .opt-btn:hover:not(:disabled) { background: #2d333b; border-color: var(--accent); }
+  .opt-btn:disabled { cursor: default; }
+  .opt-btn.correct { background: rgba(63,185,80,0.12); border-color: var(--green); color: var(--green); }
+  .opt-btn.wrong   { background: rgba(248,81,73,0.12); border-color: var(--red); color: var(--red); }
+  .opt-key {
+    width: 1.4rem; height: 1.4rem;
+    background: var(--border);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .opt-btn.correct .opt-key { background: var(--green); color: #fff; }
+  .opt-btn.wrong   .opt-key { background: var(--red); color: #fff; }
+
+  /* Feedback */
+  .feedback {
+    display: none;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+  }
+  .feedback.show { display: flex; align-items: center; gap: 0.5rem; }
+  .feedback.ok { background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3); color: var(--green); }
+  .feedback.ng { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); color: var(--red); }
+
+  /* Answer reveal */
+  .reveal-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 6px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .reveal-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .answer-box {
+    display: none;
+    margin-top: 0.75rem;
+    background: rgba(188,140,255,0.06);
+    border: 1px solid rgba(188,140,255,0.2);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+  .answer-box.show { display: block; }
+  .answer-box strong { color: var(--accent2); }
+
+  /* Explanations */
+  .explanation {
+    margin-top: 3rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .explanation-header {
+    background: linear-gradient(90deg, #1a2035, #1a1f2e);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .explanation-header h3 { font-size: 1rem; font-weight: 600; color: var(--accent); }
+  .explanation-body { padding: 1.5rem; }
+  .step {
+    margin-bottom: 2rem;
+  }
+  .step-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .step-title::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--accent2);
+    border-radius: 50%;
+  }
+  .step p { font-size: 0.9rem; line-height: 1.75; color: #cdd5df; margin-bottom: 0.6rem; }
+  .math-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .point-box {
+    background: rgba(88,166,255,0.07);
+    border: 1px solid rgba(88,166,255,0.25);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 0.85rem 1.1rem;
+    margin: 0.75rem 0;
+    font-size: 0.88rem;
+  }
+  .point-box .point-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .keypoints {
+    background: rgba(188,140,255,0.06);
+    border: 1px solid rgba(188,140,255,0.2);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .keypoints h4 { color: var(--accent2); font-size: 0.85rem; margin-bottom: 0.6rem; }
+  .keypoints ul { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .keypoints li {
+    font-size: 0.87rem;
+    color: #cdd5df;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+  .keypoints li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--accent2);
+    font-weight: 700;
+  }
+
+  /* Score banner */
+  .score-banner {
+    display: none;
+    background: linear-gradient(135deg, rgba(88,166,255,0.1), rgba(188,140,255,0.1));
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+  .score-banner.show { display: block; }
+  .score-banner span { color: var(--accent); font-weight: 700; font-size: 1.2rem; }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  .tag {
+    display: inline-block;
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.2);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Quantum Mechanics Quiz</div>
+  <h1>量子力学 穴埋めクイズ</h1>
+  <p>演算子・規格化・井戸型ポテンシャル・変数分離 ── 4択で即時判定</p>
+</header>
+
+<div class="progress-bar-wrap">
+  <span id="score-label">0 / 0 正解</span>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <span id="pct-label">0%</span>
+</div>
+
+<nav class="tabs-nav">
+  <button class="tab-btn active" onclick="showTab(0)">[1] 演算子と固有値</button>
+  <button class="tab-btn" onclick="showTab(1)">[2] 規格化因子</button>
+  <button class="tab-btn" onclick="showTab(2)">[3] 無限井戸 (0〜L)</button>
+  <button class="tab-btn" onclick="showTab(3)">[4] 無限井戸 (対称)</button>
+  <button class="tab-btn" onclick="showTab(4)">[5] 変数分離・積分</button>
+</nav>
+
+<!-- ==================== TAB 0 ==================== -->
+<div class="tab-panel active" id="tab0">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>演算子の固有値方程式 <span class="tag">固有値</span></h2>
+  </div>
+
+  <div class="formula-box">
+    <div class="label">対象の波動関数</div>
+    $$\psi(x,t) = \exp\!\left[\frac{i}{\hbar}(px - Et)\right]$$
+  </div>
+
+  <!-- Q: ア -->
+  <div class="q-card" id="q-a">
+    <div class="q-header">
+      <span class="q-badge">ア</span>
+      <div class="q-text">位置演算子 $\hat{x}$ を $\psi(x,t)$ に作用させると？<br>
+        $\hat{x}\,\psi(x,t) = \boxed{\text{ア}}\,\psi(x,t)$</div>
+    </div>
+    <div class="options" id="opts-a"></div>
+    <div class="feedback" id="fb-a"></div>
+    <button class="reveal-btn" onclick="reveal('a')">答えを見る</button>
+    <div class="answer-box" id="ans-a">
+      <strong>ア = $x$（実数）</strong><br>
+      位置演算子は $\hat{x} = x$（掛け算演算子）。$\psi$ に作用すると $x\cdot\psi$ を返す。固有値は $x$ そのもの。
+    </div>
+  </div>
+
+  <!-- Q: イ -->
+  <div class="q-card" id="q-b">
+    <div class="q-header">
+      <span class="q-badge">イ</span>
+      <div class="q-text">運動量演算子 $\hat{p} = -i\hbar\dfrac{\partial}{\partial x}$ を $\psi$ に作用させると？<br>
+        $\hat{p}\,\psi(x,t) = \boxed{\text{イ}}\,\psi(x,t)$</div>
+    </div>
+    <div class="options" id="opts-b"></div>
+    <div class="feedback" id="fb-b"></div>
+    <button class="reveal-btn" onclick="reveal('b')">答えを見る</button>
+    <div class="answer-box" id="ans-b">
+      <strong>イ = $p$（運動量）</strong><br>
+      $\hat{p}\psi = -i\hbar \cdot \frac{i}{\hbar}p\,\psi = p\,\psi$。固有値は $p$。
+    </div>
+  </div>
+
+  <!-- Q: ウ -->
+  <div class="q-card" id="q-c">
+    <div class="q-header">
+      <span class="q-badge">ウ</span>
+      <div class="q-text">自由粒子のハミルトニアン $\hat{H} = \dfrac{\hat{p}^2}{2m}$ を作用させると？<br>
+        $\hat{H}\,\psi(x,t) = \boxed{\text{ウ}}\,\psi(x,t)$</div>
+    </div>
+    <div class="options" id="opts-c"></div>
+    <div class="feedback" id="fb-c"></div>
+    <button class="reveal-btn" onclick="reveal('c')">答えを見る</button>
+    <div class="answer-box" id="ans-c">
+      <strong>ウ = $E = p^2/(2m)$</strong><br>
+      $\hat{H}\psi = \frac{p^2}{2m}\psi = E\,\psi$。固有値は全エネルギー $E$。
+    </div>
+  </div>
+
+  <!-- Q: エ -->
+  <div class="q-card" id="q-d">
+    <div class="q-header">
+      <span class="q-badge">エ</span>
+      <div class="q-text">上式の中で「固有値方程式」と呼ばれるのはどれか？（複数選択の問いだが、ここでは「当てはまるもの全てを含む選択肢」を選べ）</div>
+    </div>
+    <div class="options" id="opts-d"></div>
+    <div class="feedback" id="fb-d"></div>
+    <button class="reveal-btn" onclick="reveal('d')">答えを見る</button>
+    <div class="answer-box" id="ans-d">
+      <strong>エ = b と c（イとウ）</strong><br>
+      固有値方程式とは「演算子×波動関数＝（定数）×波動関数」の形。(a) は $\hat{x}$ の固有値方程式にもなるが、量子力学で通常「固有値方程式」として重視されるのは <em>運動量</em>・<em>エネルギー</em>固有値方程式 (b)(c)。特に (c) は時間依存しない Schrödinger 方程式そのもの。
+    </div>
+  </div>
+
+  <!-- Explanation Tab0 -->
+  <div class="explanation">
+    <div class="explanation-header">
+      <h3>📖 ステップバイステップ解説：演算子と固有値方程式</h3>
+    </div>
+    <div class="explanation-body">
+
+      <div class="step">
+        <div class="step-title">Step 1 ── 波動関数の確認</div>
+        <p>与えられた波動関数は「平面波」と呼ばれる形です：</p>
+        <div class="math-block">$$\psi(x,t) = \exp\!\left[\frac{i}{\hbar}(px - Et)\right]$$</div>
+        <p>$p$ は運動量、$E$ はエネルギー、$\hbar = h/(2\pi)$ は換算プランク定数。この関数は空間方向に波数 $k = p/\hbar$、時間方向に角振動数 $\omega = E/\hbar$ で振動します。</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 2 ── 位置演算子 (a)</div>
+        <p>量子力学では位置演算子を $\hat{x} = x$（変数そのものを掛ける演算子）と定義します：</p>
+        <div class="math-block">$$\hat{x}\,\psi(x,t) = x\cdot\psi(x,t)$$</div>
+        <div class="point-box">
+          <div class="point-label">ポイント</div>
+          固有値方程式の形 $\hat{A}\,\psi = a\,\psi$ において、$a$ が定数（$x$ に依存しない値）でなければ「固有値方程式」とは呼びません。位置演算子では固有値 $a = x$ となりますが、これは「$x$ という特定の値に対して」という意味で、粒子が位置 $x$ に確定した状態です。
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 3 ── 運動量演算子 (b)</div>
+        <p>運動量演算子は $\hat{p} = -i\hbar\,\partial/\partial x$ と定義されます。$\psi$ を $x$ で偏微分してみましょう：</p>
+        <div class="math-block">$$\frac{\partial \psi}{\partial x} = \frac{i}{\hbar}\,p\,\psi$$</div>
+        <p>これに $-i\hbar$ を掛けると：</p>
+        <div class="math-block">$$\hat{p}\,\psi = -i\hbar \cdot \frac{i}{\hbar}\,p\,\psi = p\,\psi$$</div>
+        <p>固有値は $p$ です。この平面波は運動量 $p$ が確定した状態です。</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 4 ── ハミルトニアン (c)：時間依存しない Schrödinger 方程式</div>
+        <p>自由粒子のハミルトニアムは $\hat{H} = \hat{p}^2/(2m)$。Step 3 の結果を使うと：</p>
+        <div class="math-block">$$\hat{H}\,\psi = \frac{\hat{p}^2}{2m}\psi = \frac{p^2}{2m}\psi = E\,\psi \quad\left(E = \frac{p^2}{2m}\right)$$</div>
+        <p>これが時間依存しない Schrödinger 方程式（定常状態のシュレーディンガー方程式）です。</p>
+        <div class="point-box">
+          <div class="point-label">固有値方程式の定義</div>
+          演算子 $\hat{A}$ に対し $\hat{A}\,\psi = a\,\psi$（$a$ は定数）が成り立つとき、この式を「固有値方程式」、$\psi$ を「固有関数」、$a$ を「固有値」と呼ぶ。(b)(c) は共に固有値方程式の形をとっている。
+        </div>
+      </div>
+
+      <div class="keypoints">
+        <h4>🔑 キーポイントまとめ</h4>
+        <ul>
+          <li>位置演算子 $\hat{x} = x$：固有値 $= x$</li>
+          <li>運動量演算子 $\hat{p} = -i\hbar\,\partial/\partial x$：固有値 $= p$</li>
+          <li>ハミルトニアン $\hat{H} = \hat{p}^2/(2m)+V$：固有値 $= E$</li>
+          <li>固有値方程式 $\hat{A}\psi = a\psi$ の形をとるもの → 物理量が確定</li>
+          <li>平面波は $\hat{p}$ と $\hat{H}$ の同時固有状態（$V=0$ の場合）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 1 ==================== -->
+<div class="tab-panel" id="tab1">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>規格化因子 A, B, C <span class="tag">規格化</span></h2>
+  </div>
+
+  <div class="formula-box">
+    <div class="label">規格化条件</div>
+    $$\int_{-\infty}^{\infty}|\psi(x)|^2\,dx = 1$$
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem">（指定範囲以外はゼロ）</p>
+  </div>
+
+  <!-- Q: オ -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">オ</span>
+      <div class="q-text">$\psi(x) = A\sin\!\left(\dfrac{\pi x}{a}\right)$，$-a \le x \le a$ の規格化因子 $A$ は？</div>
+    </div>
+    <div class="options" id="opts-e"></div>
+    <div class="feedback" id="fb-e"></div>
+    <button class="reveal-btn" onclick="reveal('e')">答えを見る</button>
+    <div class="answer-box" id="ans-e">
+      <strong>オ = $1/\sqrt{a}$</strong><br>
+      $\int_{-a}^{a}\sin^2\!\left(\frac{\pi x}{a}\right)dx = a$（sin² の積分は区間 $2a$ の半分）。よって $A^2 \cdot a = 1 \Rightarrow A = 1/\sqrt{a}$。
+    </div>
+  </div>
+
+  <!-- Q: カ -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">カ</span>
+      <div class="q-text">$\psi(x) = B\cos\!\left(\dfrac{\pi x}{2a}\right)$，$-a \le x \le a$ の規格化因子 $B$ は？</div>
+    </div>
+    <div class="options" id="opts-f"></div>
+    <div class="feedback" id="fb-f"></div>
+    <button class="reveal-btn" onclick="reveal('f')">答えを見る</button>
+    <div class="answer-box" id="ans-f">
+      <strong>カ = $1/\sqrt{a}$</strong><br>
+      $\int_{-a}^{a}\cos^2\!\left(\frac{\pi x}{2a}\right)dx = a$（cos² も同様）。$B = 1/\sqrt{a}$。
+    </div>
+  </div>
+
+  <!-- Q: キ -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">キ</span>
+      <div class="q-text">$\psi(x) = Ce^{-|x|}$，$-\infty \le x \le \infty$ の規格化因子 $C$ は？</div>
+    </div>
+    <div class="options" id="opts-g"></div>
+    <div class="feedback" id="fb-g"></div>
+    <button class="reveal-btn" onclick="reveal('g')">答えを見る</button>
+    <div class="answer-box" id="ans-g">
+      <strong>キ = $1/\sqrt{1} = 1$（より正確には $C = 1$）</strong><br>
+      $\int_{-\infty}^{\infty}e^{-2|x|}dx = 2\int_0^{\infty}e^{-2x}dx = 1$。よって $C^2 = 1 \Rightarrow C = 1$。
+    </div>
+  </div>
+
+  <!-- Explanation Tab1 -->
+  <div class="explanation">
+    <div class="explanation-header">
+      <h3>📖 ステップバイステップ解説：規格化因子の求め方</h3>
+    </div>
+    <div class="explanation-body">
+
+      <div class="step">
+        <div class="step-title">Step 1 ── 規格化とは何か</div>
+        <p>量子力学では $|\psi(x)|^2$ が「粒子が $x$ 付近にいる確率密度」です。全空間で積分すると確率の合計が 1 になるはずなので：</p>
+        <div class="math-block">$$\int_{-\infty}^{\infty}|\psi(x)|^2\,dx = 1$$</div>
+        <p>規格化因子（$A, B, C$ など）はこの条件が満たされるように決める定数です。</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 2 ── A の計算：$\sin^2$ の積分</div>
+        <div class="math-block">$$\int_{-a}^{a}A^2\sin^2\!\left(\frac{\pi x}{a}\right)dx = 1$$</div>
+        <p>半角公式 $\sin^2\theta = (1-\cos 2\theta)/2$ を使います：</p>
+        <div class="math-block">$$\int_{-a}^{a}\sin^2\!\left(\frac{\pi x}{a}\right)dx = \int_{-a}^{a}\frac{1-\cos\!\left(\frac{2\pi x}{a}\right)}{2}dx$$</div>
+        <p>第 2 項は一周期分の $\cos$ の積分でゼロ。第 1 項は $\frac{1}{2}\cdot 2a = a$。</p>
+        <div class="math-block">$$A^2 \cdot a = 1 \implies A = \frac{1}{\sqrt{a}}$$</div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 3 ── B の計算：$\cos^2$ の積分</div>
+        <div class="math-block">$$\int_{-a}^{a}\cos^2\!\left(\frac{\pi x}{2a}\right)dx$$</div>
+        <p>半角公式 $\cos^2\theta = (1+\cos 2\theta)/2$：</p>
+        <div class="math-block">$$= \int_{-a}^{a}\frac{1+\cos\!\left(\frac{\pi x}{a}\right)}{2}dx = a + 0 = a$$</div>
+        <p>$\cos(\pi x/a)$ は $[-a,a]$ で一周期分なので積分はゼロ。よって $B = 1/\sqrt{a}$。</p>
+        <div class="point-box">
+          <div class="point-label">A と B が一致する理由</div>
+          sin² と cos² は同じ積分値になります（$[-a,a]$ で半周期が異なるだけで面積は同じ）。
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 4 ── C の計算：指数関数の積分</div>
+        <p>$|x|$ の絶対値があるので $x \ge 0$ と $x < 0$ に分けます：</p>
+        <div class="math-block">$$\int_{-\infty}^{\infty}C^2 e^{-2|x|}dx = 2C^2\int_0^{\infty}e^{-2x}dx = 2C^2\cdot\frac{1}{2} = C^2$$</div>
+        <p>$C^2 = 1$ より $C = 1$（$C$ は正の実数）。</p>
+      </div>
+
+      <div class="keypoints">
+        <h4>🔑 キーポイントまとめ</h4>
+        <ul>
+          <li>規格化 ↔ $\int|\psi|^2 dx = 1$ から定数を逆算</li>
+          <li>$\int_{-L}^{L}\sin^2(n\pi x/L)\,dx = L$（半角公式で計算）</li>
+          <li>$\int_{-\infty}^{\infty}e^{-\alpha|x|}dx = 2/\alpha$（$\alpha > 0$）</li>
+          <li>偶関数の積分は $2\times$ 片側積分でOK</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2 ==================== -->
+<div class="tab-panel" id="tab2">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>1次元無限井戸型ポテンシャル (0 ≤ x ≤ L) <span class="tag">固有値問題</span></h2>
+  </div>
+
+  <div class="formula-box">
+    <div class="label">ポテンシャル</div>
+    $$V(x) = \begin{cases} 0 & (0 \le x \le L) \\ \infty & (x > L,\; x < 0) \end{cases}$$
+  </div>
+
+  <!-- Q: ク -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">ク</span>
+      <div class="q-text">$0 \le x \le L$ における時間依存しない Schrödinger 方程式は $\dfrac{d^2u}{dx^2} = \boxed{\text{ク}}\,u(x)$ と書ける。ク は？</div>
+    </div>
+    <div class="options" id="opts-h"></div>
+    <div class="feedback" id="fb-h"></div>
+    <button class="reveal-btn" onclick="reveal('h')">答えを見る</button>
+    <div class="answer-box" id="ans-h">
+      <strong>ク = $-2mE/\hbar^2$（負の定数）</strong><br>
+      $\hat{H}u = Eu$、$V=0$ なので $-(\hbar^2/2m)d^2u/dx^2 = Eu$。整理して $d^2u/dx^2 = -(2mE/\hbar^2)u$。
+    </div>
+  </div>
+
+  <!-- Q: ケ -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">ケ</span>
+      <div class="q-text">境界条件（波動関数が井戸の壁でゼロになる）を式で表すと？</div>
+    </div>
+    <div class="options" id="opts-i"></div>
+    <div class="feedback" id="fb-i"></div>
+    <button class="reveal-btn" onclick="reveal('i')">答えを見る</button>
+    <div class="answer-box" id="ans-i">
+      <strong>ケ = $u(0) = u(L) = 0$</strong><br>
+      無限ポテンシャルの壁では波動関数が完全に遮断されるため、境界で $u = 0$。
+    </div>
+  </div>
+
+  <!-- Q: コ -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">コ</span>
+      <div class="q-text">最低エネルギー固有値（基底状態エネルギー）は？</div>
+    </div>
+    <div class="options" id="opts-j"></div>
+    <div class="feedback" id="fb-j"></div>
+    <button class="reveal-btn" onclick="reveal('j')">答えを見る</button>
+    <div class="answer-box" id="ans-j">
+      <strong>コ = $E_1 = \dfrac{\pi^2\hbar^2}{2mL^2}$</strong><br>
+      $n=1$ のとき $k = \pi/L$、$E_1 = \hbar^2 k^2/(2m) = \pi^2\hbar^2/(2mL^2)$。
+    </div>
+  </div>
+
+  <!-- Q: サ -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">サ</span>
+      <div class="q-text">次いで大きいエネルギー固有値（第1励起状態）は？</div>
+    </div>
+    <div class="options" id="opts-k"></div>
+    <div class="feedback" id="fb-k"></div>
+    <button class="reveal-btn" onclick="reveal('k')">答えを見る</button>
+    <div class="answer-box" id="ans-k">
+      <strong>サ = $E_2 = 4E_1 = \dfrac{4\pi^2\hbar^2}{2mL^2} = \dfrac{2\pi^2\hbar^2}{mL^2}$</strong><br>
+      $n=2$ のとき $E_2 = 4E_1$。エネルギーは $n^2$ に比例する。
+    </div>
+  </div>
+
+  <!-- Explanation Tab2 -->
+  <div class="explanation">
+    <div class="explanation-header">
+      <h3>📖 ステップバイステップ解説：無限井戸型ポテンシャル</h3>
+    </div>
+    <div class="explanation-body">
+
+      <div class="step">
+        <div class="step-title">Step 1 ── 方程式の導出</div>
+        <p>$V=0$ の領域でのシュレーディンガー方程式：</p>
+        <div class="math-block">$$-\frac{\hbar^2}{2m}\frac{d^2u}{dx^2} = Eu$$</div>
+        <p>両辺を $-\hbar^2/(2m)$ で割ると：</p>
+        <div class="math-block">$$\frac{d^2u}{dx^2} = -\frac{2mE}{\hbar^2}\,u \equiv -k^2 u \quad \left(k = \frac{\sqrt{2mE}}{\hbar} > 0\right)$$</div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 2 ── 一般解</div>
+        <p>$-k^2 < 0$ なので一般解は三角関数：</p>
+        <div class="math-block">$$u(x) = A\sin(kx) + B\cos(kx)$$</div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 3 ── 境界条件の適用</div>
+        <p>$u(0) = 0$：$B\cos(0) = B = 0$ → $B = 0$</p>
+        <p>$u(L) = 0$：$A\sin(kL) = 0$ → $kL = n\pi$（$n = 1, 2, 3, \ldots$）</p>
+        <div class="math-block">$$k_n = \frac{n\pi}{L}$$</div>
+        <div class="point-box">
+          <div class="point-label">量子化の起源</div>
+          $n$ が整数に限定されることで、エネルギーが離散化（量子化）されます。これが「量子力学」の核心。
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 4 ── エネルギー固有値</div>
+        <div class="math-block">$$E_n = \frac{\hbar^2 k_n^2}{2m} = \frac{n^2\pi^2\hbar^2}{2mL^2}, \quad n = 1, 2, 3, \ldots$$</div>
+        <p>最低エネルギー（$n=1$）：</p>
+        <div class="math-block">$$E_1 = \frac{\pi^2\hbar^2}{2mL^2}$$</div>
+        <p>第 1 励起状態（$n=2$）：$E_2 = 4E_1 = 4 \times \dfrac{\pi^2\hbar^2}{2mL^2}$</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 5 ── 固有関数の形</div>
+        <div class="math-block">$$u_n(x) = \sqrt{\frac{2}{L}}\sin\!\left(\frac{n\pi x}{L}\right), \quad 0 \le x \le L$$</div>
+        <p>$\sqrt{2/L}$ は規格化因子。$n$ が増えるほど波の「節」が増え、エネルギーが高くなります。</p>
+      </div>
+
+      <div class="keypoints">
+        <h4>🔑 キーポイントまとめ</h4>
+        <ul>
+          <li>$V=0$ 領域の方程式：$d^2u/dx^2 = -k^2 u$（$k = \sqrt{2mE}/\hbar$）</li>
+          <li>境界条件 $u(0)=u(L)=0$ → $k_n = n\pi/L$（量子化）</li>
+          <li>エネルギー $E_n = n^2\pi^2\hbar^2/(2mL^2) \propto n^2$</li>
+          <li>基底状態でもエネルギーゼロにならない（零点エネルギー）</li>
+          <li>固有関数 $\propto \sin(n\pi x/L)$ は $n-1$ 個の節を持つ</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 3 ==================== -->
+<div class="tab-panel" id="tab3">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2>対称無限井戸 (|x| ≤ L) <span class="tag">偶関数・奇関数</span></h2>
+  </div>
+
+  <div class="formula-box">
+    <div class="label">ポテンシャル</div>
+    $$V(x) = \begin{cases} 0 & (|x| \le L) \\ \infty & (|x| > L) \end{cases}$$
+  </div>
+
+  <!-- Q: ア (tab3) -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">ア</span>
+      <div class="q-text">$|x| \le L$ における時間依存しない Schrödinger 方程式の右辺係数は？<br>
+        $\dfrac{d^2u}{dx^2} = \text{ア}\cdot u(x)$</div>
+    </div>
+    <div class="options" id="opts-l"></div>
+    <div class="feedback" id="fb-l"></div>
+    <button class="reveal-btn" onclick="reveal('l')">答えを見る</button>
+    <div class="answer-box" id="ans-l">
+      <strong>ア = $-2mE/\hbar^2$</strong><br>
+      Tab [3] と同形。$V=0$ なので同じ式。
+    </div>
+  </div>
+
+  <!-- Q: イ (tab3) -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">イ</span>
+      <div class="q-text">境界条件は？</div>
+    </div>
+    <div class="options" id="opts-m"></div>
+    <div class="feedback" id="fb-m"></div>
+    <button class="reveal-btn" onclick="reveal('m')">答えを見る</button>
+    <div class="answer-box" id="ans-m">
+      <strong>イ = $u(-L) = u(L) = 0$</strong><br>
+      壁は $x = \pm L$ にある。
+    </div>
+  </div>
+
+  <!-- Q: ウ (tab3) -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">ウ</span>
+      <div class="q-text">偶関数解の最低エネルギー固有値 $E_{\min}^{(\text{偶})}$ は？</div>
+    </div>
+    <div class="options" id="opts-n"></div>
+    <div class="feedback" id="fb-n"></div>
+    <button class="reveal-btn" onclick="reveal('n')">答えを見る</button>
+    <div class="answer-box" id="ans-n">
+      <strong>ウ = $\dfrac{\pi^2\hbar^2}{8mL^2}$</strong><br>
+      偶関数解は $u \propto \cos(k_n x)$、$u(\pm L)=0$ → $k_n L = (2n-1)\pi/2$（奇数半整数倍）。最小は $n=1$：$k_1 = \pi/(2L)$、$E = \hbar^2k_1^2/(2m) = \pi^2\hbar^2/(8mL^2)$。
+    </div>
+  </div>
+
+  <!-- Q: エ (tab3) -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">エ</span>
+      <div class="q-text">奇関数解の最低エネルギー固有値 $E_{\min}^{(\text{奇})}$ は？</div>
+    </div>
+    <div class="options" id="opts-o"></div>
+    <div class="feedback" id="fb-o"></div>
+    <button class="reveal-btn" onclick="reveal('o')">答えを見る</button>
+    <div class="answer-box" id="ans-o">
+      <strong>エ = $\dfrac{\pi^2\hbar^2}{2mL^2}$</strong><br>
+      奇関数解は $u \propto \sin(k_n x)$、$u(\pm L)=0$ → $k_n = n\pi/L$。最小は $n=1$：$E = \pi^2\hbar^2/(2mL^2)$。
+    </div>
+  </div>
+
+  <!-- Q: オ (tab3) -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">オ</span>
+      <div class="q-text">全固有値のうち最も低いもの（基底状態）は？</div>
+    </div>
+    <div class="options" id="opts-p"></div>
+    <div class="feedback" id="fb-p"></div>
+    <button class="reveal-btn" onclick="reveal('p')">答えを見る</button>
+    <div class="answer-box" id="ans-p">
+      <strong>オ = $\dfrac{\pi^2\hbar^2}{8mL^2}$（偶関数解）</strong><br>
+      $\pi^2\hbar^2/(8mL^2) < \pi^2\hbar^2/(2mL^2)$ なので偶関数解の方が低い。
+    </div>
+  </div>
+
+  <!-- Q: カ (tab3) -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">カ</span>
+      <div class="q-text">次いで大きいエネルギー準位は？</div>
+    </div>
+    <div class="options" id="opts-q"></div>
+    <div class="feedback" id="fb-q"></div>
+    <button class="reveal-btn" onclick="reveal('q')">答えを見る</button>
+    <div class="answer-box" id="ans-q">
+      <strong>カ = $\dfrac{\pi^2\hbar^2}{2mL^2}$（奇関数解の最低、$\sin(\pi x/L)$）</strong><br>
+      次は $E_{\min}^{(\text{奇})} = \pi^2\hbar^2/(2mL^2) = 4 \times (\pi^2\hbar^2/8mL^2)$。
+    </div>
+  </div>
+
+  <!-- Explanation Tab3 -->
+  <div class="explanation">
+    <div class="explanation-header">
+      <h3>📖 ステップバイステップ解説：対称ポテンシャルの偶奇分類</h3>
+    </div>
+    <div class="explanation-body">
+
+      <div class="step">
+        <div class="step-title">Step 1 ── なぜ偶関数・奇関数に分類できるか</div>
+        <p>ポテンシャルが $V(x) = V(-x)$（原点対称）のとき、ハミルトニアンは空間反転に対して不変です。よって固有関数は偶関数か奇関数のどちらかにすることができます（パリティが良い量子数になる）。</p>
+        <div class="point-box">
+          <div class="point-label">偶関数・奇関数の定義</div>
+          偶関数：$u(-x) = +u(x)$　奇関数：$u(-x) = -u(x)$
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 2 ── 偶関数解（コサイン型）</div>
+        <p>一般解 $u = A\sin(kx) + B\cos(kx)$ のうち、偶関数成分は $u = B\cos(kx)$。</p>
+        <p>境界条件 $u(\pm L) = 0$：</p>
+        <div class="math-block">$$\cos(kL) = 0 \implies kL = \frac{(2n-1)\pi}{2}, \quad n = 1, 2, 3, \ldots$$</div>
+        <p>$n=1$：$k_1 = \pi/(2L)$、エネルギー：</p>
+        <div class="math-block">$$E_{\min}^{(\text{偶})} = \frac{\hbar^2 k_1^2}{2m} = \frac{\pi^2\hbar^2}{8mL^2}$$</div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 3 ── 奇関数解（サイン型）</div>
+        <p>奇関数成分は $u = A\sin(kx)$。境界条件 $u(\pm L) = 0$：</p>
+        <div class="math-block">$$\sin(kL) = 0 \implies kL = n\pi, \quad n = 1, 2, 3, \ldots$$</div>
+        <p>$n=1$：$k_1 = \pi/L$、エネルギー：</p>
+        <div class="math-block">$$E_{\min}^{(\text{奇})} = \frac{\pi^2\hbar^2}{2mL^2}$$</div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 4 ── 全エネルギー準位の並び</div>
+        <p>両系列を合わせると（$E_0 \equiv \pi^2\hbar^2/(8mL^2)$ とおく）：</p>
+        <div class="math-block">$$E_0,\; 4E_0,\; 9E_0,\; 16E_0, \ldots$$</div>
+        <p>これは $[-L,L]$ 幅 $2L$ の井戸の固有値 $E_n = n^2\pi^2\hbar^2/(2m\cdot(2L)^2) = n^2E_0$ と一致します。</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 5 ── [3] と [4] の比較</div>
+        <p>[3] では幅 $L$（$0 \le x \le L$）、[4] では幅 $2L$（$-L \le x \le L$）。基底エネルギーは幅の 2 乗に反比例するので、[4] は [3] の $1/4$ になります。</p>
+      </div>
+
+      <div class="keypoints">
+        <h4>🔑 キーポイントまとめ</h4>
+        <ul>
+          <li>原点対称ポテンシャル → 固有関数は偶関数か奇関数に分類可能</li>
+          <li>偶関数解：$\cos(kx)$、$kL = (2n-1)\pi/2$</li>
+          <li>奇関数解：$\sin(kx)$、$kL = n\pi$</li>
+          <li>最低エネルギーは偶関数解（$n=1$ の $\cos$ 解）</li>
+          <li>井戸の幅 $W$ → $E_1 \propto 1/W^2$</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4 ==================== -->
+<div class="tab-panel" id="tab4">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <h2>変数分離と積分 <span class="tag">変数分離</span></h2>
+  </div>
+
+  <!-- 問1 -->
+  <h3 style="font-size:0.95rem;color:var(--text-muted);margin-bottom:1rem;">問1　積分の計算</h3>
+
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">問1(a)</span>
+      <div class="q-text">$\displaystyle\int_{-\pi}^{\pi}\cos(2x)\sin(3x)\,dx = ?$</div>
+    </div>
+    <div class="options" id="opts-r"></div>
+    <div class="feedback" id="fb-r"></div>
+    <button class="reveal-btn" onclick="reveal('r')">答えを見る</button>
+    <div class="answer-box" id="ans-r">
+      <strong>答え = 0</strong><br>
+      積和公式：$\cos(2x)\sin(3x) = \frac{1}{2}[\sin(5x)+\sin(x)]$。$\sin$ は奇関数なので $[-\pi,\pi]$ での積分はゼロ。（直交性による）
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">問1(b)</span>
+      <div class="q-text">$\displaystyle\int_{-\pi}^{\pi}\cos^2(4x)\,dx = ?$</div>
+    </div>
+    <div class="options" id="opts-s"></div>
+    <div class="feedback" id="fb-s"></div>
+    <button class="reveal-btn" onclick="reveal('s')">答えを見る</button>
+    <div class="answer-box" id="ans-s">
+      <strong>答え = $\pi$</strong><br>
+      $\cos^2(4x) = (1+\cos(8x))/2$。$\int_{-\pi}^{\pi}1/2\,dx = \pi$、$\cos(8x)$ の積分はゼロ（4周期分）。
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 問2 -->
+  <h3 style="font-size:0.95rem;color:var(--text-muted);margin-bottom:1rem;">問2　変数分離法</h3>
+
+  <div class="formula-box">
+    <div class="label">Schrödinger 方程式と演算子</div>
+    $$\hat{H}\psi(x,t) = \hat{E}\psi(x,t), \quad \hat{H} = -\frac{\hbar^2}{2m}\frac{\partial^2}{\partial x^2} + V(x), \quad \hat{E} = i\hbar\frac{\partial}{\partial t}$$
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem">$\psi(x,t) = X(x)T(t)$ と書けるとする</p>
+  </div>
+
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">問2(a)–1</span>
+      <div class="q-text">$\psi = X(x)T(t)$ を代入して $t$ のみの式と $x$ のみの式に分離したとき、時間部分の方程式の形は？</div>
+    </div>
+    <div class="options" id="opts-t"></div>
+    <div class="feedback" id="fb-t"></div>
+    <button class="reveal-btn" onclick="reveal('t')">答えを見る</button>
+    <div class="answer-box" id="ans-t">
+      <strong>答え = $i\hbar\,\dot{T}/T = E$（定数）</strong><br>
+      両辺を $XT$ で割ると左辺は $x$ のみ、右辺は $t$ のみ → 両辺とも定数 $E$。
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">問2(b)–T解</span>
+      <div class="q-text">$t$ に関する微分方程式 $i\hbar\,dT/dt = ET$ の一般解は？</div>
+    </div>
+    <div class="options" id="opts-u"></div>
+    <div class="feedback" id="fb-u"></div>
+    <button class="reveal-btn" onclick="reveal('u')">答えを見る</button>
+    <div class="answer-box" id="ans-u">
+      <strong>答え = $T(t) = C\,e^{-iEt/\hbar}$</strong><br>
+      $dT/T = -iE/\hbar\,dt$ を積分。時間振動因子は $e^{-i\omega t}$（$\omega = E/\hbar$）の形。
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-badge">問2(b)–X解</span>
+      <div class="q-text">$V(x)=0$ のとき、$x$ に関する方程式の一般解は？</div>
+    </div>
+    <div class="options" id="opts-v"></div>
+    <div class="feedback" id="fb-v"></div>
+    <button class="reveal-btn" onclick="reveal('v')">答えを見る</button>
+    <div class="answer-box" id="ans-v">
+      <strong>答え = $X(x) = Ae^{ikx} + Be^{-ikx}$（$k = \sqrt{2mE}/\hbar$）</strong><br>
+      $d^2X/dx^2 = -k^2X$ の一般解。右進行波と左進行波の重ね合わせ。
+    </div>
+  </div>
+
+  <!-- Explanation Tab4 -->
+  <div class="explanation">
+    <div class="explanation-header">
+      <h3>📖 ステップバイステップ解説：変数分離法と三角関数の直交性</h3>
+    </div>
+    <div class="explanation-body">
+
+      <div class="step">
+        <div class="step-title">Step 1 ── 三角関数の直交性（問1）</div>
+        <p>フーリエ解析の基礎となる直交性：</p>
+        <div class="math-block">
+          $$\int_{-\pi}^{\pi}\cos(mx)\cos(nx)\,dx = \pi\,\delta_{mn}$$
+          $$\int_{-\pi}^{\pi}\sin(mx)\sin(nx)\,dx = \pi\,\delta_{mn}$$
+          $$\int_{-\pi}^{\pi}\cos(mx)\sin(nx)\,dx = 0 \quad (\text{常に})$$
+        </div>
+        <p>最後の式は「cos（偶関数）×sin（奇関数）= 奇関数」の積分がゼロであることからも分かります。</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 2 ── $\cos^2$ の積分（問1b）</div>
+        <div class="math-block">$$\int_{-\pi}^{\pi}\cos^2(4x)\,dx = \int_{-\pi}^{\pi}\frac{1+\cos(8x)}{2}dx = \frac{2\pi}{2} + 0 = \pi$$</div>
+        <p>$\cos(8x)$ は $[-\pi,\pi]$ でちょうど 4 周期なので積分はゼロ。</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 3 ── 変数分離の手順（問2a）</div>
+        <p>$\psi = X(x)T(t)$ を $i\hbar\,\partial\psi/\partial t = \hat{H}\psi$ に代入：</p>
+        <div class="math-block">$$i\hbar\,X\dot{T} = \hat{H}[X]\cdot T$$</div>
+        <p>両辺を $XT$ で割る：</p>
+        <div class="math-block">$$\underbrace{\frac{i\hbar\,\dot{T}}{T}}_{\text{$t$ のみ}} = \underbrace{\frac{\hat{H}[X]}{X}}_{\text{$x$ のみ}} = E$$</div>
+        <p>左辺は $t$ だけ、右辺は $x$ だけの関数が等しいので、両辺は共通の定数 $E$ でなければならない。</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 4 ── 時間方程式の解（問2b）</div>
+        <div class="math-block">$$i\hbar\frac{dT}{dt} = ET \implies \frac{dT}{T} = \frac{-iE}{\hbar}dt \implies T(t) = e^{-iEt/\hbar}$$</div>
+        <p>これが波動関数の時間振動部分。エネルギー $E$ が大きいほど速く振動する。</p>
+      </div>
+
+      <div class="step">
+        <div class="step-title">Step 5 ── 空間方程式の解（$V=0$）（問2b）</div>
+        <div class="math-block">$$\frac{d^2X}{dx^2} = -k^2 X, \quad k = \frac{\sqrt{2mE}}{\hbar}$$</div>
+        <p>一般解：$X(x) = Ae^{ikx} + Be^{-ikx}$ または $C\sin(kx) + D\cos(kx)$（同値）。</p>
+        <div class="point-box">
+          <div class="point-label">平面波との接続</div>
+          $T(t) \cdot X(x) = e^{-iEt/\hbar}(Ae^{ikx}+Be^{-ikx})$ の $A$ 成分は $e^{i(kx-Et/\hbar)}$。これが [1] の平面波 $e^{i(px-Et)/\hbar}$（$p = \hbar k$）に対応！
+        </div>
+      </div>
+
+      <div class="keypoints">
+        <h4>🔑 キーポイントまとめ</h4>
+        <ul>
+          <li>cos×sin = 奇関数 → $[-\pi,\pi]$ での積分はゼロ（直交性）</li>
+          <li>$\cos^2(nx)$ の積分 → 半角公式で定数項と $\cos(2nx)$ に分解</li>
+          <li>変数分離 $\psi = X(x)T(t)$ → 両辺を定数 $E$ で等値</li>
+          <li>時間解：$T = e^{-iEt/\hbar}$（位相振動）</li>
+          <li>空間解（$V=0$）：$X = Ae^{ikx}+Be^{-ikx}$（進行波の重ね合わせ）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Question Data
+// ============================================================
+const questions = {
+  a: {
+    text: 'ア: 位置演算子の固有値',
+    correct: 0,
+    options: ['$x$', '$p$', '$i\\hbar$', '$E$'],
+    answer_id: 'ans-a', feedback_id: 'fb-a', opts_id: 'opts-a'
+  },
+  b: {
+    text: 'イ: 運動量演算子の固有値',
+    correct: 2,
+    options: ['$E$', '$\\hbar k$', '$p$', '$-i\\hbar$'],
+    answer_id: 'ans-b', feedback_id: 'fb-b', opts_id: 'opts-b'
+  },
+  c: {
+    text: 'ウ: ハミルトニアンの固有値',
+    correct: 1,
+    options: ['$p^2$', '$E = p^2/(2m)$', '$2mE$', '$\\hbar\\omega$'],
+    answer_id: 'ans-c', feedback_id: 'fb-c', opts_id: 'opts-c'
+  },
+  d: {
+    text: 'エ: 固有値方程式はどれか',
+    correct: 3,
+    options: ['aのみ', 'bのみ', 'cのみ', 'bとc'],
+    answer_id: 'ans-d', feedback_id: 'fb-d', opts_id: 'opts-d'
+  },
+  e: {
+    correct: 2,
+    options: ['$1/\\sqrt{2a}$', '$1/a$', '$1/\\sqrt{a}$', '$\\sqrt{2/a}$'],
+    answer_id: 'ans-e', feedback_id: 'fb-e', opts_id: 'opts-e'
+  },
+  f: {
+    correct: 0,
+    options: ['$1/\\sqrt{a}$', '$\\sqrt{2/a}$', '$1/\\sqrt{2a}$', '$1/a$'],
+    answer_id: 'ans-f', feedback_id: 'fb-f', opts_id: 'opts-f'
+  },
+  g: {
+    correct: 1,
+    options: ['$1/\\sqrt{2}$', '$1$', '$\\sqrt{2}$', '$1/2$'],
+    answer_id: 'ans-g', feedback_id: 'fb-g', opts_id: 'opts-g'
+  },
+  h: {
+    correct: 3,
+    options: ['$+2mE/\\hbar^2$', '$2mV/\\hbar^2$', '$mE/\\hbar^2$', '$-2mE/\\hbar^2$'],
+    answer_id: 'ans-h', feedback_id: 'fb-h', opts_id: 'opts-h'
+  },
+  i: {
+    correct: 0,
+    options: ['$u(0)=u(L)=0$', "$u'(0)=u'(L)=0$", '$u(0)=1,\\;u(L)=0$', '$u(L/2)=0$'],
+    answer_id: 'ans-i', feedback_id: 'fb-i', opts_id: 'opts-i'
+  },
+  j: {
+    correct: 2,
+    options: [
+      '$\\dfrac{\\pi^2\\hbar^2}{mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{4mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{2mL^2}$',
+      '$\\dfrac{2\\pi^2\\hbar^2}{mL^2}$'
+    ],
+    answer_id: 'ans-j', feedback_id: 'fb-j', opts_id: 'opts-j'
+  },
+  k: {
+    correct: 0,
+    options: [
+      '$\\dfrac{2\\pi^2\\hbar^2}{mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{mL^2}$',
+      '$\\dfrac{3\\pi^2\\hbar^2}{2mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{4mL^2}$'
+    ],
+    answer_id: 'ans-k', feedback_id: 'fb-k', opts_id: 'opts-k'
+  },
+  l: {
+    correct: 1,
+    options: ['$+2mE/\\hbar^2$', '$-2mE/\\hbar^2$', '$-mE/\\hbar^2$', '$2mE/\\hbar$'],
+    answer_id: 'ans-l', feedback_id: 'fb-l', opts_id: 'opts-l'
+  },
+  m: {
+    correct: 3,
+    options: [
+      "$u'(-L)=u'(L)=0$",
+      '$u(0)=u(L)=0$',
+      '$u(-L)=0$ のみ',
+      '$u(-L)=u(L)=0$'
+    ],
+    answer_id: 'ans-m', feedback_id: 'fb-m', opts_id: 'opts-m'
+  },
+  n: {
+    correct: 2,
+    options: [
+      '$\\dfrac{\\pi^2\\hbar^2}{2mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{4mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{8mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{32mL^2}$'
+    ],
+    answer_id: 'ans-n', feedback_id: 'fb-n', opts_id: 'opts-n'
+  },
+  o: {
+    correct: 0,
+    options: [
+      '$\\dfrac{\\pi^2\\hbar^2}{2mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{8mL^2}$',
+      '$\\dfrac{2\\pi^2\\hbar^2}{mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{4mL^2}$'
+    ],
+    answer_id: 'ans-o', feedback_id: 'fb-o', opts_id: 'opts-o'
+  },
+  p: {
+    correct: 1,
+    options: [
+      '$\\dfrac{\\pi^2\\hbar^2}{2mL^2}$（奇関数）',
+      '$\\dfrac{\\pi^2\\hbar^2}{8mL^2}$（偶関数）',
+      '$\\dfrac{\\pi^2\\hbar^2}{4mL^2}$',
+      '$0$'
+    ],
+    answer_id: 'ans-p', feedback_id: 'fb-p', opts_id: 'opts-p'
+  },
+  q: {
+    correct: 3,
+    options: [
+      '$\\dfrac{9\\pi^2\\hbar^2}{8mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{8mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{4mL^2}$',
+      '$\\dfrac{\\pi^2\\hbar^2}{2mL^2}$'
+    ],
+    answer_id: 'ans-q', feedback_id: 'fb-q', opts_id: 'opts-q'
+  },
+  r: {
+    correct: 2,
+    options: ['$\\pi$', '$2\\pi$', '$0$', '$-1$'],
+    answer_id: 'ans-r', feedback_id: 'fb-r', opts_id: 'opts-r'
+  },
+  s: {
+    correct: 0,
+    options: ['$\\pi$', '$2\\pi$', '$0$', '$\\pi/2$'],
+    answer_id: 'ans-s', feedback_id: 'fb-s', opts_id: 'opts-s'
+  },
+  t: {
+    correct: 1,
+    options: [
+      '$T/\\dot{T} = E$',
+      '$i\\hbar\\,\\dot{T}/T = E$（定数）',
+      '$\\dot{T} = ET$',
+      '$T = e^{-Et}$'
+    ],
+    answer_id: 'ans-t', feedback_id: 'fb-t', opts_id: 'opts-t'
+  },
+  u: {
+    correct: 3,
+    options: [
+      '$T = e^{iEt/\\hbar}$',
+      '$T = \\cos(Et/\\hbar)$',
+      '$T = e^{-Et}$',
+      '$T = Ce^{-iEt/\\hbar}$'
+    ],
+    answer_id: 'ans-u', feedback_id: 'fb-u', opts_id: 'opts-u'
+  },
+  v: {
+    correct: 0,
+    options: [
+      '$Ae^{ikx}+Be^{-ikx}$',
+      '$Ae^{kx}+Be^{-kx}$',
+      '$A\\sin(kx)$ のみ',
+      '$e^{-k^2x^2}$'
+    ],
+    answer_id: 'ans-v', feedback_id: 'fb-v', opts_id: 'opts-v'
+  }
+};
+
+const keys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v'];
+const optLabels = ['A', 'B', 'C', 'D'];
+const state = {};
+keys.forEach(k => { state[k] = null; });
+
+function buildOptions() {
+  keys.forEach(key => {
+    const q = questions[key];
+    const container = document.getElementById(q.opts_id);
+    if (!container) return;
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.id = `opt-${key}-${i}`;
+      btn.innerHTML = `<span class="opt-key">${optLabels[i]}</span><span>${opt}</span>`;
+      btn.onclick = () => handleAnswer(key, i);
+      container.appendChild(btn);
+    });
+  });
+  if (window.MathJax) MathJax.typesetPromise();
+}
+
+function handleAnswer(key, chosen) {
+  if (state[key] !== null) return;
+  state[key] = chosen;
+  const q = questions[key];
+  const correct = q.correct === chosen;
+  const fb = document.getElementById(q.feedback_id);
+  fb.className = `feedback show ${correct ? 'ok' : 'ng'}`;
+  fb.textContent = correct ? '✓ 正解！' : `✗ 不正解。正解は ${optLabels[q.correct]} です。`;
+  q.options.forEach((_, i) => {
+    const btn = document.getElementById(`opt-${key}-${i}`);
+    btn.disabled = true;
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === chosen && !correct) btn.classList.add('wrong');
+  });
+  updateProgress();
+}
+
+function reveal(key) {
+  const q = questions[key];
+  const box = document.getElementById(q.answer_id);
+  box.classList.toggle('show');
+  if (box.classList.contains('show') && window.MathJax) {
+    MathJax.typesetPromise([box]);
+  }
+}
+
+function updateProgress() {
+  const answered = keys.filter(k => state[k] !== null).length;
+  const correct = keys.filter(k => state[k] === questions[k].correct).length;
+  const total = keys.length;
+  document.getElementById('score-label').textContent = `${correct} / ${total} 正解`;
+  const pct = Math.round(answered / total * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('pct-label').textContent = pct + '%';
+}
+
+function showTab(idx) {
+  document.querySelectorAll('.tab-panel').forEach((p, i) => {
+    p.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
+  });
+  if (window.MathJax) MathJax.typesetPromise();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildOptions();
+});
+</script>
+</body>
+</html>
